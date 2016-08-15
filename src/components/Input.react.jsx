@@ -32,7 +32,7 @@ class Input extends Component {
     render() {
         let data = getViewData(this.props);
 
-        return <div className={this.props.containerClassName || null}>
+        return [
             <input
                 ref='node'
                 type='text'
@@ -41,9 +41,10 @@ class Input extends Component {
                 checked={data.props.checked}
                 value={data.value}
                 onChange={this.handleChange.bind(this)}
-                onBlur={this.handleBlur.bind(this)}/>
-            {data.hint}
-        </div>
+                onBlur={this.handleBlur.bind(this)}
+            />,
+            <div>{data.hint}</div>
+        ]
     }
 }
 
