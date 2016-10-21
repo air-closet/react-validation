@@ -1,10 +1,10 @@
 import React, {Component, PropTypes} from 'react';
 
 // TODO: Rework React.element appearance
-module.exports = (error, value, rules) => {
+module.exports = (error, value, rules, props) => {
     if (error) {
         error = React.isValidElement(error) ? error : error.split && error.split(':')[0];
     }
 
-    return (error && rules[error] && rules[error].hint(value)) || error;
+    return (error && rules[error] && rules[error].hint(value, props)) || error;
 };

@@ -19,7 +19,7 @@ module.exports = (props) => {
 
     data.value = pullValue(props);
     data.error = pullError(props);
-    data.hint = pullHint(data.error, data.value, rules);
+    data.hint = pullHint(data.error, data.value, rules, props);
     data.className = pullClassName(data.error, props);
     data.props = rest;
 

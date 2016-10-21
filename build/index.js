@@ -2232,7 +2232,7 @@
 
 	    data.value = (0, _pullValue2.default)(props);
 	    data.error = (0, _pullError2.default)(props);
-	    data.hint = (0, _pullHint2.default)(data.error, data.value, _rules2.default);
+	    data.hint = (0, _pullHint2.default)(data.error, data.value, _rules2.default, props);
 	    data.className = (0, _pullClassName2.default)(data.error, props);
 	    data.props = rest;
 
@@ -2300,12 +2300,12 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	// TODO: Rework React.element appearance
-	module.exports = function (error, value, rules) {
+	module.exports = function (error, value, rules, props) {
 	    if (error) {
 	        error = _react2.default.isValidElement(error) ? error : error.split && error.split(':')[0];
 	    }
 
-	    return error && rules[error] && rules[error].hint(value) || error;
+	    return error && rules[error] && rules[error].hint(value, props) || error;
 	};
 
 /***/ },
