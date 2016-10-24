@@ -6,5 +6,5 @@ module.exports = (error, value, rules, props) => {
         error = React.isValidElement(error) ? error : error.split && error.split(':')[0];
     }
 
-    return (error && rules[error] && rules[error].hint(value, props)) || error;
+    return (error && rules[error] && rules[error].hint(value, props.states[props.name])) || error;
 };

@@ -141,7 +141,7 @@
 	    function Form(props) {
 	        (0, _classCallCheck3.default)(this, Form);
 
-	        var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Form).call(this, props));
+	        var _this = (0, _possibleConstructorReturn3.default)(this, (Form.__proto__ || (0, _getPrototypeOf2.default)(Form)).call(this, props));
 
 	        _this.state = {
 	            errors: {},
@@ -178,17 +178,33 @@
 	    }, {
 	        key: '_update',
 	        value: function _update(component, event, isChanged, isUsed) {
+	            var _this2 = this;
+
+	            var changeName = component.props.name;
+	            var validationNames = component.props.validations.filter(function (item) {
+	                return item !== 'required';
+	            });
+	            var componentNames = (0, _keys2.default)(this.components).filter(function (key) {
+	                return _this2.components[key].props.validations.some(function (item) {
+	                    return validationNames.includes(item);
+	                });
+	            });
+
 	            // FIXME: remove mutation
-	            this.state.states[component.props.name] = this.state.states[component.props.name] || {};
+	            this.state.states[changeName] = this.state.states[changeName] || {};
 
 	            var componentState = this.state.states[component.props.name];
 	            var checkbox = component.props.type === 'checkbox' || component.props.type === 'radio';
 
 	            (0, _assign2.default)(componentState, {
 	                value: event.target.value,
+	                name: changeName,
 	                isChanged: isChanged || componentState.isChanged || event.type === 'change',
 	                isUsed: isUsed || checkbox || componentState.isUsed || event.type === 'blur',
 	                isChecked: !componentState.isChecked
+	            });
+	            componentNames.forEach(function (key) {
+	                return (0, _assign2.default)(_this2.state.states[key] || {}, { isLastChanged: _this2.state.states[key] && _this2.state.states[key].name === changeName });
 	            });
 
 	            this._validate();
@@ -196,14 +212,14 @@
 	    }, {
 	        key: '_validate',
 	        value: function _validate() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            var errors = (0, _assign2.default)({}, this.state.errors);
 
 	            (0, _keys2.default)(this.components).forEach(function (key) {
-	                var error = _this2._getError(_this2.components[key]);
+	                var error = _this3._getError(_this3.components[key]);
 
-	                error ? (0, _assign2.default)(errors, error) : delete errors[_this2.components[key].props.name];
+	                error ? (0, _assign2.default)(errors, error) : delete errors[_this3.components[key].props.name];
 	            });
 
 	            this.setState({
@@ -240,7 +256,7 @@
 	    }, {
 	        key: '_clone',
 	        value: function _clone(children) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return _react2.default.Children.map(children, function (child) {
 	                if ((typeof child === 'undefined' ? 'undefined' : (0, _typeof3.default)(child)) !== 'object') {
@@ -251,14 +267,14 @@
 	                var isValidationComponent = child.props.validations && child.props.validations.length;
 
 	                if (child.type === _ButtonReact2.default || isValidationComponent) {
-	                    props = (0, _assign2.default)({}, _this3.state);
+	                    props = (0, _assign2.default)({}, _this4.state);
 
 	                    if (isValidationComponent) {
-	                        _this3._extendProps(props);
+	                        _this4._extendProps(props);
 	                    }
 	                }
 
-	                props.children = _this3._clone(child.props.children);
+	                props.children = _this4._clone(child.props.children);
 
 	                return _react2.default.cloneElement(child, props);
 	            }, this);
@@ -591,7 +607,7 @@
 /* 13 */
 /***/ function(module, exports) {
 
-	var core = module.exports = {version: '2.3.0'};
+	var core = module.exports = {version: '2.4.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
@@ -807,6 +823,7 @@
 	  // Thrash, waste and sodomy: IE GC bug
 	  var iframe = __webpack_require__(23)('iframe')
 	    , i      = enumBugKeys.length
+	    , lt     = '<'
 	    , gt     = '>'
 	    , iframeDocument;
 	  iframe.style.display = 'none';
@@ -816,7 +833,7 @@
 	  // html.removeChild(iframe);
 	  iframeDocument = iframe.contentWindow.document;
 	  iframeDocument.open();
-	  iframeDocument.write('<script>document.F=Object</script' + gt);
+	  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
 	  iframeDocument.close();
 	  createDict = iframeDocument.F;
 	  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
@@ -834,6 +851,7 @@
 	  } else result = createDict();
 	  return Properties === undefined ? result : dPs(result, Properties);
 	};
+
 
 /***/ },
 /* 31 */
@@ -1205,6 +1223,7 @@
 	  , isEnum         = {}.propertyIsEnumerable
 	  , SymbolRegistry = shared('symbol-registry')
 	  , AllSymbols     = shared('symbols')
+	  , OPSymbols      = shared('op-symbols')
 	  , ObjectProto    = Object[PROTOTYPE]
 	  , USE_NATIVE     = typeof $Symbol == 'function'
 	  , QObject        = global.QObject;
@@ -1236,6 +1255,7 @@
 	};
 
 	var $defineProperty = function defineProperty(it, key, D){
+	  if(it === ObjectProto)$defineProperty(OPSymbols, key, D);
 	  anObject(it);
 	  key = toPrimitive(key, true);
 	  anObject(D);
@@ -1263,10 +1283,14 @@
 	};
 	var $propertyIsEnumerable = function propertyIsEnumerable(key){
 	  var E = isEnum.call(this, key = toPrimitive(key, true));
+	  if(this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return false;
 	  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
 	};
 	var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key){
-	  var D = gOPD(it = toIObject(it), key = toPrimitive(key, true));
+	  it  = toIObject(it);
+	  key = toPrimitive(key, true);
+	  if(it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return;
+	  var D = gOPD(it, key);
 	  if(D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key]))D.enumerable = true;
 	  return D;
 	};
@@ -1275,16 +1299,19 @@
 	    , result = []
 	    , i      = 0
 	    , key;
-	  while(names.length > i)if(!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META)result.push(key);
-	  return result;
+	  while(names.length > i){
+	    if(!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META)result.push(key);
+	  } return result;
 	};
 	var $getOwnPropertySymbols = function getOwnPropertySymbols(it){
-	  var names  = gOPN(toIObject(it))
+	  var IS_OP  = it === ObjectProto
+	    , names  = gOPN(IS_OP ? OPSymbols : toIObject(it))
 	    , result = []
 	    , i      = 0
 	    , key;
-	  while(names.length > i)if(has(AllSymbols, key = names[i++]))result.push(AllSymbols[key]);
-	  return result;
+	  while(names.length > i){
+	    if(has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true))result.push(AllSymbols[key]);
+	  } return result;
 	};
 
 	// 19.4.1.1 Symbol([description])
@@ -1292,13 +1319,12 @@
 	  $Symbol = function Symbol(){
 	    if(this instanceof $Symbol)throw TypeError('Symbol is not a constructor!');
 	    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
-	    DESCRIPTORS && setter && setSymbolDesc(ObjectProto, tag, {
-	      configurable: true,
-	      set: function(value){
-	        if(has(this, HIDDEN) && has(this[HIDDEN], tag))this[HIDDEN][tag] = false;
-	        setSymbolDesc(this, tag, createDesc(1, value));
-	      }
-	    });
+	    var $set = function(value){
+	      if(this === ObjectProto)$set.call(OPSymbols, value);
+	      if(has(this, HIDDEN) && has(this[HIDDEN], tag))this[HIDDEN][tag] = false;
+	      setSymbolDesc(this, tag, createDesc(1, value));
+	    };
+	    if(DESCRIPTORS && setter)setSymbolDesc(ObjectProto, tag, {configurable: true, set: $set});
 	    return wrap(tag);
 	  };
 	  redefine($Symbol[PROTOTYPE], 'toString', function toString(){
@@ -1996,7 +2022,7 @@
 
 	    function Button() {
 	        (0, _classCallCheck3.default)(this, Button);
-	        return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Button).apply(this, arguments));
+	        return (0, _possibleConstructorReturn3.default)(this, (Button.__proto__ || (0, _getPrototypeOf2.default)(Button)).apply(this, arguments));
 	    }
 
 	    (0, _createClass3.default)(Button, [{
@@ -2125,7 +2151,7 @@
 	    function Input(props) {
 	        (0, _classCallCheck3.default)(this, Input);
 
-	        var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Input).call(this, props));
+	        var _this = (0, _possibleConstructorReturn3.default)(this, (Input.__proto__ || (0, _getPrototypeOf2.default)(Input)).call(this, props));
 
 	        _this.props._register(_this);
 	        return _this;
@@ -2305,7 +2331,7 @@
 	        error = _react2.default.isValidElement(error) ? error : error.split && error.split(':')[0];
 	    }
 
-	    return error && rules[error] && rules[error].hint(value, props) || error;
+	    return error && rules[error] && rules[error].hint(value, props.states[props.name]) || error;
 	};
 
 /***/ },
@@ -2374,7 +2400,7 @@
 	    function Select(props) {
 	        (0, _classCallCheck3.default)(this, Select);
 
-	        var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Select).call(this, props));
+	        var _this = (0, _possibleConstructorReturn3.default)(this, (Select.__proto__ || (0, _getPrototypeOf2.default)(Select)).call(this, props));
 
 	        _this.props._register(_this);
 	        return _this;
@@ -2470,7 +2496,7 @@
 	    function Textarea(props) {
 	        (0, _classCallCheck3.default)(this, Textarea);
 
-	        var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Textarea).call(this, props));
+	        var _this = (0, _possibleConstructorReturn3.default)(this, (Textarea.__proto__ || (0, _getPrototypeOf2.default)(Textarea)).call(this, props));
 
 	        _this.props._register(_this);
 	        return _this;

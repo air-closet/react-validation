@@ -36,18 +36,24 @@ class Form extends Component {
     }
 
     _update(component, event, isChanged, isUsed) {
+        let changeName = component.props.name;
+        let validationNames = component.props.validations.filter(item => item !== 'required');
+        let componentNames = Object.keys(this.components).filter(key => this.components[key].props.validations.some(item => validationNames.includes(item)));
+
         // FIXME: remove mutation
-        this.state.states[component.props.name] = this.state.states[component.props.name] || {};
+        this.state.states[changeName] = this.state.states[changeName] || {};
 
         let componentState = this.state.states[component.props.name];
         let checkbox = (component.props.type === 'checkbox' || component.props.type === 'radio');
 
         Object.assign(componentState, {
             value: event.target.value,
+            name: changeName,
             isChanged: isChanged || componentState.isChanged || event.type === 'change',
             isUsed: isUsed || checkbox || componentState.isUsed || event.type === 'blur',
             isChecked: !componentState.isChecked
         });
+        componentNames.forEach(key => Object.assign(this.state.states[key] || {}, { isLastChanged: this.state.states[key] && (this.state.states[key].name === changeName) }))
 
         this._validate();
     }
