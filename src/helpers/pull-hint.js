@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 
 // TODO: Rework React.element appearance
 module.exports = (error, value, rules, props) => {

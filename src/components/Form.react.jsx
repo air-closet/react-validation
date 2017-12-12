@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import rules from './../rules.js';
 import Button from './../components/Button.react.jsx';
 

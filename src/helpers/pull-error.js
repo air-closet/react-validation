@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 
 if (!String.prototype.includes) {
     String.prototype.includes = function() {
